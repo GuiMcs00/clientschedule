@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreCustomerRequest;
 use App\Http\Requests\UpdateCustomerRequest;
 use App\Http\Resources\CustomerResource;
+use App\Http\Resources\CustomerCollection;
 use App\Models\Customer;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -21,9 +22,9 @@ class CustomerController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $customers = Customer::query()->whereNull('deleted_at')->get();
+        // $customers = Customer::query()->whereNull('deleted_at')->get();
 
-        return response()->json(CustomerResource::collection($customers));
+        return response()->json(new CustomerCollection(Customer::paginate()));
     }
 
     /**
