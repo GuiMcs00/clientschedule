@@ -10,6 +10,8 @@ Route::get('/health-check-api', function () {
 /*
  * API Routes for Customer Resource
  */
-Route::apiResource('customers', CustomerController::class);
-Route::post('customers/{id}/restore', [CustomerController::class, 'restore']);
-Route::delete('customers/{id}/force-delete', [CustomerController::class, 'forceDelete']);
+Route::prefix('v1')->group(function () {
+    Route::apiResource('customers', CustomerController::class);
+    Route::post('customers/{id}/restore', [CustomerController::class, 'restore']);
+    Route::delete('customers/{id}/force', [CustomerController::class, 'forceDelete']);
+});
