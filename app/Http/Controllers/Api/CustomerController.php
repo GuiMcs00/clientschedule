@@ -10,21 +10,25 @@ use App\Http\Resources\CustomerCollection;
 use App\Models\Customer;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use OpenApi\Attributes as OA;
 
 class CustomerController extends Controller
 {
     /**
-     * List all active customers.
+     * List all active customers with optional name search.
      *
-     * @param Request $request The HTTP request
-     * @return JsonResponse Collection of active customers
+     * @param Request $request The HTTP request (supports ?search=name query parameter)
+     * @return JsonResponse Paginated collection of active customers
      */
     public function index(Request $request): JsonResponse
     {
-        // $customers = Customer::query()->whereNull('deleted_at')->get();
+        $query = Customer::query();
 
-        return response()->json(new CustomerCollection(Customer::paginate()));
+        // Search by name if provided
+        if ($search = $request->input('search')) {
+            $query->where('name', 'ILIKE', "%{$search}%");
+        }
+
+        return response()->json(new CustomerCollection($query->paginate()));
     }
 
     /**

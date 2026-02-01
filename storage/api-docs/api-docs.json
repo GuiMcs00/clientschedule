@@ -16,18 +16,82 @@
                     "Customers"
                 ],
                 "summary": "List all active customers",
-                "description": "List all active customers.",
-                "operationId": "fddf8e3800951c00bc5fbd50026d7e6a",
+                "description": "Returns a paginated list of active customers with optional name search filter",
+                "operationId": "0b01c809f686bd389e3a52d8159d8896",
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Filter customers by name (case-insensitive partial match)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "Ana"
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number for pagination",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 1
+                        },
+                        "example": 1
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Number of items per page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 15
+                        },
+                        "example": 15
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Successful operation",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/components/schemas/Customer"
-                                    }
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Customer"
+                                            }
+                                        },
+                                        "meta": {
+                                            "properties": {
+                                                "total": {
+                                                    "type": "integer",
+                                                    "example": 100
+                                                },
+                                                "count": {
+                                                    "type": "integer",
+                                                    "example": 15
+                                                },
+                                                "per_page": {
+                                                    "type": "integer",
+                                                    "example": 15
+                                                },
+                                                "current_page": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "total_pages": {
+                                                    "type": "integer",
+                                                    "example": 7
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
                                 }
                             }
                         }
@@ -40,7 +104,7 @@
                 ],
                 "summary": "Create a new customer",
                 "description": "Creates a new customer. If a soft deleted customer with the same email exists, it will be reactivated and updated.",
-                "operationId": "59d57e1ee7b485895d41c89b775a8779",
+                "operationId": "a939b38998435e43ba078d86434bb3ce",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -97,8 +161,7 @@
                     "Customers"
                 ],
                 "summary": "Get customer details",
-                "description": "Get a specific customer.",
-                "operationId": "302154171cd888ac30d0cbd25d85aee6",
+                "operationId": "90677c64368ffb9f9af95a5266021144",
                 "parameters": [
                     {
                         "name": "id",
@@ -132,7 +195,7 @@
                 ],
                 "summary": "Soft delete a customer",
                 "description": "Performs a soft delete on the customer (sets deleted_at timestamp).",
-                "operationId": "b64a35742d1c3be4f64ddbb4557730b7",
+                "operationId": "e06ef21a490a8dbff1d2cc4d03115388",
                 "parameters": [
                     {
                         "name": "id",
@@ -159,7 +222,7 @@
                 ],
                 "summary": "Update a customer",
                 "description": "Updates a customer. All fields are optional (partial update supported).",
-                "operationId": "c29882b5fae05edc8b81156a856b8394",
+                "operationId": "98325d892ee4652fe7da9f1432822b49",
                 "parameters": [
                     {
                         "name": "id",
@@ -227,12 +290,11 @@
                 ],
                 "summary": "Restore a soft deleted customer",
                 "description": "Reactivates a soft deleted customer by removing the deleted_at timestamp.",
-                "operationId": "7374b4bfe3c4d3e028c167fb7fb46ab3",
+                "operationId": "686ab07215ec4b8ab7925f1f6f1b9d86",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "The customer ID",
                         "required": true,
                         "schema": {
                             "type": "integer"
@@ -264,12 +326,11 @@
                 ],
                 "summary": "Permanently delete a customer",
                 "description": "Permanently removes the customer from the database (cannot be undone).",
-                "operationId": "40d881bb095f3eed573e67ac4f0e890c",
+                "operationId": "d03cedfce1981325f09555de7790e337",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "The customer ID",
                         "required": true,
                         "schema": {
                             "type": "integer"
