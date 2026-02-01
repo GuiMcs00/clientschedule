@@ -1,59 +1,212 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# ClientSchedule (Customer Management)
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Mini customer management and scheduling system, developed as an exercise for a **PHP/Laravel** position, focusing on **Laravel + Eloquent + PostgreSQL** and modern PHP features.
 
-## About Laravel
+## Stack
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- PHP 8.2+
+- Laravel 12
+- Eloquent ORM
+- PostgreSQL
+- (Optional) Node/Vite for frontend assets
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Features
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- **Customers** CRUD
+- **Soft Delete** (logical deletion) and **Restore** (reactivation)
+- **Force Delete** (permanent deletion)
+- Versioned API (`/api/v1`)
+- Validation via **FormRequest**
+- Standardized responses via **API Resources**
 
-## Learning Laravel
+---
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+## Architecture and Project Organization
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+This project follows Laravel conventions to maintain predictability and facilitate maintenance.
 
-## Laravel Sponsors
+### Main Folders
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+- `routes/`
+    - `api.php` — API routes (stateless)
+    - `web.php` — web routes (stateful: sessions/cookies/CSRF)
+    - `console.php` — Artisan commands (CLI entrypoints)
 
-### Premium Partners
+- `app/Http/Controllers/`
+    - Application controllers (HTTP entry layer)
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+- `app/Http/Requests/`
+    - FormRequests for **input validation and authorization** (`validated()`)
 
-## Contributing
+- `app/Http/Resources/`
+    - Resources for **JSON output standardization** (API shape)
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+- `app/Models/`
+    - Eloquent models (entity mapping and simple rules/relationships)
 
-## Code of Conduct
+- `database/migrations/`
+    - Schema versioning (Postgres)
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### Flow (API)
 
-## Security Vulnerabilities
+HTTP Request → `routes/api.php` → Controller → FormRequest (`validated()`) → Model/Eloquent → Resource → JSON Response
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### Where is the "Customer CRUD"
 
-## License
+- Model: `app/Models/Customer.php`
+- Controller: `app/Http/Controllers/Api/CustomerController.php`
+- Requests:
+    - `app/Http/Requests/StoreCustomerRequest.php`
+    - `app/Http/Requests/UpdateCustomerRequest.php`
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+- Resource:
+    - `app/Http/Resources/CustomerResource.php`
+
+- Routes:
+    - `routes/api.php`
+
+---
+
+## Requirements
+
+- PHP 8.2+ with extensions:
+    - `xml`, `dom` (usually via `php-xml`)
+    - `pdo_pgsql`, `pgsql` (usually via `php-pgsql`)
+
+- Composer
+- PostgreSQL 14+ (or compatible)
+- (Optional) Node 18+ and npm for Vite
+
+## Installation
+
+Clone the repository and install dependencies:
+
+```bash
+composer install
+cp .env.example .env
+php artisan key:generate
+```
+
+---
+
+## Database Setup (PostgreSQL)
+
+Create the database and user (example):
+
+```bash
+sudo -u postgres psql
+```
+
+Inside `psql`:
+
+```sql
+CREATE DATABASE clientschedule;
+CREATE USER user WITH PASSWORD 'password';
+GRANT ALL PRIVILEGES ON DATABASE clientschedule TO user;
+ALTER DATABASE clientschedule OWNER TO user;
+\q
+```
+
+Edit the `.env`:
+
+```env
+DB_CONNECTION=pgsql
+DB_HOST=127.0.0.1
+DB_PORT=5432
+DB_DATABASE=clientschedule
+DB_USERNAME=user
+DB_PASSWORD=password
+
+SESSION_DRIVER=file
+```
+
+> Note: `SESSION_DRIVER=file` avoids dependency on the `sessions` table during initial setup.
+
+Run migrations:
+
+```bash
+php artisan migrate
+```
+
+---
+
+## Run the Project
+
+Local server:
+
+```bash
+php artisan serve
+```
+
+The application will be available at `http://127.0.0.1:8000`.
+
+### (Optional) Frontend with Vite
+
+If using Vite:
+
+```bash
+npm install
+npm run dev
+```
+
+---
+
+## API
+
+Base URL:
+
+- `http://127.0.0.1:8000/api/v1`
+
+### Customers
+
+- `GET /customers` — list customers (only active; soft deleted don't appear)
+- `POST /customers` — create customer
+    - If a soft deleted customer with the same email exists, the system **reactivates and updates** (automatic reactivation)
+
+- `GET /customers/{id}` — detail
+- `PATCH /customers/{id}` — update
+- `DELETE /customers/{id}` — soft delete
+- `POST /customers/{id}/restore` — restore (reactivate)
+- `DELETE /customers/{id}/force` — permanently delete
+
+#### Payload example (POST /customers)
+
+```json
+{
+    "name": "Ana Souza",
+    "email": "ana@email.com",
+    "phone": "+55 61 99999-9999"
+}
+```
+
+---
+
+## Rules and Technical Decisions
+
+- **Soft Delete**: Customers are not physically removed by default; the `deleted_at` field is filled.
+- **Unique email among active**: validation prevents email duplication in active customers.
+- **Reactivation**: when creating with the email of a soft deleted customer, the record is restored and updated.
+- **Validation**: FormRequests ensure consistent payload without manual conditionals in the controller.
+- **Controlled output**: Resources explicitly define the response shape.
+
+---
+
+## Useful Commands
+
+List routes:
+
+```bash
+php artisan route:list
+```
+
+Clear caches:
+
+```bash
+php artisan optimize:clear
+```
+
+Recreate database from scratch (deletes everything):
+
+```bash
+php artisan migrate:fresh
+```

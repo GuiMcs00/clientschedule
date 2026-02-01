@@ -1,0 +1,345 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "ClientSchedule API",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://127.0.0.1:8000"
+        }
+    ],
+    "paths": {
+        "/api/v1/customers": {
+            "get": {
+                "tags": [
+                    "Customers"
+                ],
+                "summary": "List all active customers",
+                "description": "List all active customers.",
+                "operationId": "fddf8e3800951c00bc5fbd50026d7e6a",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Customer"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Customers"
+                ],
+                "summary": "Create a new customer",
+                "description": "Creates a new customer. If a soft deleted customer with the same email exists, it will be reactivated and updated.",
+                "operationId": "59d57e1ee7b485895d41c89b775a8779",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "email"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "maxLength": 150,
+                                        "example": "Ana Souza"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "maxLength": 255,
+                                        "example": "ana@email.com"
+                                    },
+                                    "phone": {
+                                        "type": "string",
+                                        "maxLength": 30,
+                                        "example": "+55 61 99999-9999",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Customer created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Customer"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                }
+            }
+        },
+        "/api/v1/customers/{id}": {
+            "get": {
+                "tags": [
+                    "Customers"
+                ],
+                "summary": "Get customer details",
+                "description": "Get a specific customer.",
+                "operationId": "302154171cd888ac30d0cbd25d85aee6",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 1
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Customer"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Customer not found"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Customers"
+                ],
+                "summary": "Soft delete a customer",
+                "description": "Performs a soft delete on the customer (sets deleted_at timestamp).",
+                "operationId": "b64a35742d1c3be4f64ddbb4557730b7",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 1
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Customer soft deleted successfully"
+                    },
+                    "404": {
+                        "description": "Customer not found"
+                    }
+                }
+            },
+            "patch": {
+                "tags": [
+                    "Customers"
+                ],
+                "summary": "Update a customer",
+                "description": "Updates a customer. All fields are optional (partial update supported).",
+                "operationId": "c29882b5fae05edc8b81156a856b8394",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 1
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "maxLength": 150,
+                                        "example": "Ana Souza"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "maxLength": 255,
+                                        "example": "ana@email.com"
+                                    },
+                                    "phone": {
+                                        "type": "string",
+                                        "maxLength": 30,
+                                        "example": "+55 61 99999-9999",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Customer updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Customer"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Customer not found"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                }
+            }
+        },
+        "/api/v1/customers/{id}/restore": {
+            "post": {
+                "tags": [
+                    "Customers"
+                ],
+                "summary": "Restore a soft deleted customer",
+                "description": "Reactivates a soft deleted customer by removing the deleted_at timestamp.",
+                "operationId": "7374b4bfe3c4d3e028c167fb7fb46ab3",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "The customer ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 1
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Customer restored successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Customer"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Customer not found"
+                    }
+                }
+            }
+        },
+        "/api/v1/customers/{id}/force": {
+            "delete": {
+                "tags": [
+                    "Customers"
+                ],
+                "summary": "Permanently delete a customer",
+                "description": "Permanently removes the customer from the database (cannot be undone).",
+                "operationId": "40d881bb095f3eed573e67ac4f0e890c",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "The customer ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 1
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Customer permanently deleted successfully"
+                    },
+                    "404": {
+                        "description": "Customer not found"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "Customer": {
+                "required": [
+                    "id",
+                    "name",
+                    "email"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "maxLength": 150,
+                        "example": "Ana Souza"
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "maxLength": 255,
+                        "example": "ana@email.com"
+                    },
+                    "phone": {
+                        "type": "string",
+                        "maxLength": 30,
+                        "example": "+55 61 99999-9999",
+                        "nullable": true
+                    },
+                    "deleted_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Customers",
+            "description": "Customers"
+        }
+    ]
+}
