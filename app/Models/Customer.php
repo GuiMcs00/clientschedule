@@ -5,6 +5,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
@@ -37,12 +38,32 @@ class Customer extends Model
     ];
 
     /**
+     * Get all appointments for this customer.
+     *
+     * @return HasMany Relationship to Appointment model
+     */
+    public function appointments(): HasMany
+    {
+        return $this->hasMany(Appointment::class);
+    }
+
+    /**
+     * Get all appointment series for this customer.
+     *
+     * @return HasMany Relationship to AppointmentSeries model
+     */
+    public function series(): HasMany
+    {
+        return $this->hasMany(AppointmentSeries::class);
+    }
+
+    /**
      * Scope a query to only include active (non-deleted) customers.
      *
      * @param Builder $query The query builder instance
      * @return Builder The modified query builder
      */
-    public function returnCustomerWithScopeActive(Builder $query): Builder
+    public function scopeActive(Builder $query): Builder
     {
         return $query->whereNull('deleted_at');
     }
@@ -53,7 +74,7 @@ class Customer extends Model
      * @param Builder $query The query builder instance
      * @return Builder The modified query builder
      */
-    public function returnCustomerWithScopeInactive(Builder $query): Builder
+    public function scopeInactive(Builder $query): Builder
     {
         return $query->whereNotNull('deleted_at');
     }
