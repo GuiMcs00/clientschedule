@@ -10,6 +10,918 @@
         }
     ],
     "paths": {
+        "/api/v1/customers/{customer}/appointments": {
+            "get": {
+                "tags": [
+                    "Customer Appointments"
+                ],
+                "summary": "List all appointments for a customer",
+                "description": "Returns a paginated list of appointments for a specific customer with optional filtering by date range, status, and series inclusion.",
+                "operationId": "3955b353f743c029482ead80954df7a5",
+                "parameters": [
+                    {
+                        "name": "customer",
+                        "in": "path",
+                        "description": "Customer ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 1
+                    },
+                    {
+                        "name": "from",
+                        "in": "query",
+                        "description": "Filter appointments starting from this date/time",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date-time"
+                        },
+                        "example": "2026-02-01T09:00:00Z"
+                    },
+                    {
+                        "name": "to",
+                        "in": "query",
+                        "description": "Filter appointments up to this date/time",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date-time"
+                        },
+                        "example": "2026-02-28T18:00:00Z"
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "Filter by appointment status",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": "active",
+                            "enum": [
+                                "active",
+                                "trashed",
+                                "all"
+                            ]
+                        },
+                        "example": "active"
+                    },
+                    {
+                        "name": "include_series",
+                        "in": "query",
+                        "description": "Include series data with weekday slots",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean",
+                            "default": false
+                        },
+                        "example": false
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number for pagination",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 1
+                        },
+                        "example": 1
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Number of items per page (max 100)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 15,
+                            "maximum": 100
+                        },
+                        "example": 15
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Appointment"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Customer not found"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Customer Appointments"
+                ],
+                "summary": "Create a new appointment",
+                "description": "Creates a new appointment for a customer. Returns 409 if the time slot conflicts with an existing appointment.",
+                "operationId": "7ac6b16514116794fe6aa6850ceb5c8e",
+                "parameters": [
+                    {
+                        "name": "customer",
+                        "in": "path",
+                        "description": "Customer ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 1
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "title",
+                                    "starts_at",
+                                    "ends_at"
+                                ],
+                                "properties": {
+                                    "title": {
+                                        "type": "string",
+                                        "maxLength": 150,
+                                        "example": "Team Meeting"
+                                    },
+                                    "notes": {
+                                        "type": "string",
+                                        "example": "Quarterly review discussion",
+                                        "nullable": true
+                                    },
+                                    "starts_at": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "example": "2026-02-15T10:00:00Z"
+                                    },
+                                    "ends_at": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "example": "2026-02-15T11:00:00Z"
+                                    },
+                                    "series_id": {
+                                        "type": "integer",
+                                        "example": null,
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Appointment created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Appointment"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Customer not found"
+                    },
+                    "409": {
+                        "description": "Time conflict - overlapping appointment exists",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Conflito de horário: já existe uma marcação nesse intervalo."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                }
+            }
+        },
+        "/api/v1/customers/{customer}/appointments/{appointment}": {
+            "get": {
+                "tags": [
+                    "Customer Appointments"
+                ],
+                "summary": "Get appointment details",
+                "description": "Returns details of a specific appointment for a customer.",
+                "operationId": "85065b2dc96cb9c2898fb678ff9eaf36",
+                "parameters": [
+                    {
+                        "name": "customer",
+                        "in": "path",
+                        "description": "Customer ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 1
+                    },
+                    {
+                        "name": "appointment",
+                        "in": "path",
+                        "description": "Appointment ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 1
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Appointment"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Customer or appointment not found"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Customer Appointments"
+                ],
+                "summary": "Soft delete an appointment",
+                "description": "Performs a soft delete on the appointment (sets deleted_at timestamp).",
+                "operationId": "ff07f64b345b70939e96913227fbbedf",
+                "parameters": [
+                    {
+                        "name": "customer",
+                        "in": "path",
+                        "description": "Customer ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 1
+                    },
+                    {
+                        "name": "appointment",
+                        "in": "path",
+                        "description": "Appointment ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 1
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Appointment soft deleted successfully"
+                    },
+                    "404": {
+                        "description": "Customer or appointment not found"
+                    }
+                }
+            },
+            "patch": {
+                "tags": [
+                    "Customer Appointments"
+                ],
+                "summary": "Update an appointment",
+                "description": "Updates an existing appointment. Returns 409 if the updated time conflicts with another appointment. All fields are optional for partial updates.",
+                "operationId": "9ed9b56508b6cfe01a311274ae77910b",
+                "parameters": [
+                    {
+                        "name": "customer",
+                        "in": "path",
+                        "description": "Customer ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 1
+                    },
+                    {
+                        "name": "appointment",
+                        "in": "path",
+                        "description": "Appointment ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 1
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "title": {
+                                        "type": "string",
+                                        "maxLength": 150,
+                                        "example": "Updated Meeting Title"
+                                    },
+                                    "notes": {
+                                        "type": "string",
+                                        "example": "Updated notes",
+                                        "nullable": true
+                                    },
+                                    "starts_at": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "example": "2026-02-15T14:00:00Z"
+                                    },
+                                    "ends_at": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "example": "2026-02-15T15:00:00Z"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Appointment updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Appointment"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Customer or appointment not found"
+                    },
+                    "409": {
+                        "description": "Time conflict - overlapping appointment exists",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Conflito de horário: já existe uma marcação nesse intervalo."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                }
+            }
+        },
+        "/api/v1/customers/{customer}/series": {
+            "get": {
+                "tags": [
+                    "Customer Appointment Series"
+                ],
+                "summary": "List all appointment series for a customer",
+                "description": "Returns a list of recurring appointment series for a specific customer with optional filtering by status and weekday slot inclusion.",
+                "operationId": "2e82a21103095f31fd9fbeae36ff1c81",
+                "parameters": [
+                    {
+                        "name": "customer",
+                        "in": "path",
+                        "description": "Customer ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 1
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "Filter by series status",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": "active",
+                            "enum": [
+                                "active",
+                                "inactive",
+                                "all"
+                            ]
+                        },
+                        "example": "active"
+                    },
+                    {
+                        "name": "include_weekdays",
+                        "in": "query",
+                        "description": "Include weekday time slots in the response",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean",
+                            "default": true
+                        },
+                        "example": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/AppointmentSeries"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Customer not found"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Customer Appointment Series"
+                ],
+                "summary": "Create a new appointment series",
+                "description": "Creates a new recurring appointment series with weekday time slots. Optionally generates individual appointment occurrences immediately. Returns 409 if generated appointments conflict with existing ones.",
+                "operationId": "82d926a6d6266d4b8f1897cb69a83c75",
+                "parameters": [
+                    {
+                        "name": "customer",
+                        "in": "path",
+                        "description": "Customer ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 1
+                    },
+                    {
+                        "name": "generate",
+                        "in": "query",
+                        "description": "Whether to generate appointment occurrences immediately",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean",
+                            "default": false
+                        },
+                        "example": false
+                    },
+                    {
+                        "name": "weeks",
+                        "in": "query",
+                        "description": "Number of weeks to generate occurrences for (only used if generate=true)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 12,
+                            "maximum": 52,
+                            "minimum": 1
+                        },
+                        "example": 12
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "title",
+                                    "starts_on",
+                                    "weekdays"
+                                ],
+                                "properties": {
+                                    "title": {
+                                        "description": "Title for the appointment series",
+                                        "type": "string",
+                                        "example": "Weekly Team Meeting"
+                                    },
+                                    "notes": {
+                                        "description": "Additional notes for the series",
+                                        "type": "string",
+                                        "example": "Recurring meeting every Monday and Wednesday",
+                                        "nullable": true
+                                    },
+                                    "starts_on": {
+                                        "description": "Start date for the series",
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-02-01"
+                                    },
+                                    "ends_on": {
+                                        "description": "End date for the series (null means no end)",
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-12-31",
+                                        "nullable": true
+                                    },
+                                    "timezone": {
+                                        "description": "Timezone for the series",
+                                        "type": "string",
+                                        "example": "America/Sao_Paulo",
+                                        "nullable": true
+                                    },
+                                    "is_active": {
+                                        "description": "Whether the series is active",
+                                        "type": "boolean",
+                                        "default": true,
+                                        "example": true
+                                    },
+                                    "weekdays": {
+                                        "description": "Array of weekday time slots (0=Sunday, 6=Saturday)",
+                                        "type": "array",
+                                        "items": {
+                                            "required": [
+                                                "weekday",
+                                                "start_time",
+                                                "end_time"
+                                            ],
+                                            "properties": {
+                                                "weekday": {
+                                                    "description": "Day of week (0=Sunday, 1=Monday, ..., 6=Saturday)",
+                                                    "type": "integer",
+                                                    "maximum": 6,
+                                                    "minimum": 0,
+                                                    "example": 1
+                                                },
+                                                "start_time": {
+                                                    "description": "Start time for the slot",
+                                                    "type": "string",
+                                                    "format": "time",
+                                                    "example": "09:00"
+                                                },
+                                                "end_time": {
+                                                    "description": "End time for the slot",
+                                                    "type": "string",
+                                                    "format": "time",
+                                                    "example": "10:00"
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "example": [
+                                            {
+                                                "weekday": 1,
+                                                "start_time": "09:00",
+                                                "end_time": "10:00"
+                                            },
+                                            {
+                                                "weekday": 3,
+                                                "start_time": "14:00",
+                                                "end_time": "15:00"
+                                            }
+                                        ]
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Appointment series created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AppointmentSeries"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Customer not found"
+                    },
+                    "409": {
+                        "description": "Conflict - Generated occurrences overlap with existing appointments",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Conflito de horário: a série gerou ocorrências que colidem com marcações existentes."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                }
+            }
+        },
+        "/api/v1/customers/{customer}/series/{series}": {
+            "get": {
+                "tags": [
+                    "Customer Appointment Series"
+                ],
+                "summary": "Get a specific appointment series",
+                "description": "Returns details of a specific appointment series including weekday time slots.",
+                "operationId": "e56700b637e96f60aff19bb50015a820",
+                "parameters": [
+                    {
+                        "name": "customer",
+                        "in": "path",
+                        "description": "Customer ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 1
+                    },
+                    {
+                        "name": "series",
+                        "in": "path",
+                        "description": "Appointment Series ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 1
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AppointmentSeries"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Customer or series not found, or series does not belong to customer"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Customer Appointment Series"
+                ],
+                "summary": "Update an appointment series",
+                "description": "Updates an existing appointment series. Supports partial updates. Can replace weekday slots if provided. Optionally regenerates future appointment occurrences.",
+                "operationId": "d1f9cfda611a55f359e69484cfeb1d8a",
+                "parameters": [
+                    {
+                        "name": "customer",
+                        "in": "path",
+                        "description": "Customer ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 1
+                    },
+                    {
+                        "name": "series",
+                        "in": "path",
+                        "description": "Appointment Series ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 1
+                    },
+                    {
+                        "name": "regenerate",
+                        "in": "query",
+                        "description": "Whether to delete future occurrences and regenerate them based on updated configuration",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean",
+                            "default": false
+                        },
+                        "example": false
+                    },
+                    {
+                        "name": "weeks",
+                        "in": "query",
+                        "description": "Number of weeks to generate occurrences for (only used if regenerate=true)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 12,
+                            "maximum": 52,
+                            "minimum": 1
+                        },
+                        "example": 12
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "title": {
+                                        "description": "Title for the appointment series",
+                                        "type": "string",
+                                        "example": "Weekly Team Meeting",
+                                        "nullable": true
+                                    },
+                                    "notes": {
+                                        "description": "Additional notes for the series",
+                                        "type": "string",
+                                        "example": "Updated recurring meeting schedule",
+                                        "nullable": true
+                                    },
+                                    "starts_on": {
+                                        "description": "Start date for the series",
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-02-01",
+                                        "nullable": true
+                                    },
+                                    "ends_on": {
+                                        "description": "End date for the series (null means no end)",
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-12-31",
+                                        "nullable": true
+                                    },
+                                    "timezone": {
+                                        "description": "Timezone for the series",
+                                        "type": "string",
+                                        "example": "America/Sao_Paulo",
+                                        "nullable": true
+                                    },
+                                    "is_active": {
+                                        "description": "Whether the series is active",
+                                        "type": "boolean",
+                                        "example": true,
+                                        "nullable": true
+                                    },
+                                    "weekdays": {
+                                        "description": "Array of weekday time slots to replace existing slots (0=Sunday, 6=Saturday)",
+                                        "type": "array",
+                                        "items": {
+                                            "required": [
+                                                "weekday",
+                                                "start_time",
+                                                "end_time"
+                                            ],
+                                            "properties": {
+                                                "weekday": {
+                                                    "description": "Day of week (0=Sunday, 1=Monday, ..., 6=Saturday)",
+                                                    "type": "integer",
+                                                    "maximum": 6,
+                                                    "minimum": 0,
+                                                    "example": 1
+                                                },
+                                                "start_time": {
+                                                    "description": "Start time for the slot",
+                                                    "type": "string",
+                                                    "format": "time",
+                                                    "example": "09:00"
+                                                },
+                                                "end_time": {
+                                                    "description": "End time for the slot",
+                                                    "type": "string",
+                                                    "format": "time",
+                                                    "example": "10:00"
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "example": [
+                                            {
+                                                "weekday": 1,
+                                                "start_time": "09:00",
+                                                "end_time": "10:00"
+                                            },
+                                            {
+                                                "weekday": 3,
+                                                "start_time": "14:00",
+                                                "end_time": "15:00"
+                                            }
+                                        ],
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Appointment series updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AppointmentSeries"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Customer or series not found, or series does not belong to customer"
+                    },
+                    "409": {
+                        "description": "Conflict - Regenerated occurrences overlap with existing appointments",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Conflito de horário: a atualização gerou ocorrências que colidem com marcações existentes."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Customer Appointment Series"
+                ],
+                "summary": "Deactivate an appointment series",
+                "description": "Deactivates an appointment series by setting is_active=false. Optionally deletes all future appointment occurrences created from this series.",
+                "operationId": "6ff56dc905a11cb61cf3d933fb2dc29f",
+                "parameters": [
+                    {
+                        "name": "customer",
+                        "in": "path",
+                        "description": "Customer ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 1
+                    },
+                    {
+                        "name": "series",
+                        "in": "path",
+                        "description": "Appointment Series ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 1
+                    },
+                    {
+                        "name": "delete_future",
+                        "in": "query",
+                        "description": "Whether to soft delete all future appointment occurrences created from this series",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean",
+                            "default": false
+                        },
+                        "example": false
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Appointment series deactivated successfully"
+                    },
+                    "404": {
+                        "description": "Customer or series not found, or series does not belong to customer"
+                    }
+                }
+            }
+        },
         "/api/v1/customers": {
             "get": {
                 "tags": [
@@ -351,6 +1263,195 @@
     },
     "components": {
         "schemas": {
+            "Appointment": {
+                "required": [
+                    "id",
+                    "customer_id",
+                    "title",
+                    "starts_at",
+                    "ends_at"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "customer_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "series_id": {
+                        "type": "integer",
+                        "example": null,
+                        "nullable": true
+                    },
+                    "title": {
+                        "type": "string",
+                        "maxLength": 150,
+                        "example": "Team Meeting"
+                    },
+                    "notes": {
+                        "type": "string",
+                        "example": "Quarterly review discussion",
+                        "nullable": true
+                    },
+                    "starts_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2026-02-15T10:00:00Z"
+                    },
+                    "ends_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2026-02-15T11:00:00Z"
+                    },
+                    "deleted_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": null,
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2026-02-01T10:00:00Z"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2026-02-01T10:00:00Z"
+                    },
+                    "series": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/AppointmentSeries"
+                            }
+                        ],
+                        "nullable": true,
+                        "description": "Included only when requested via include_series parameter"
+                    }
+                },
+                "type": "object"
+            },
+            "AppointmentSeries": {
+                "required": [
+                    "id",
+                    "customer_id",
+                    "title",
+                    "starts_on"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "customer_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "title": {
+                        "type": "string",
+                        "maxLength": 150,
+                        "example": "Weekly Therapy Sessions"
+                    },
+                    "notes": {
+                        "type": "string",
+                        "example": "Recurring appointment series",
+                        "nullable": true
+                    },
+                    "timezone": {
+                        "type": "string",
+                        "maxLength": 64,
+                        "example": "America/Sao_Paulo"
+                    },
+                    "starts_on": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "2026-02-01"
+                    },
+                    "ends_on": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "2026-12-31",
+                        "nullable": true
+                    },
+                    "is_active": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "deleted_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": null,
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2026-02-01T10:00:00Z"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2026-02-01T10:00:00Z"
+                    },
+                    "weekdays": {
+                        "description": "Weekday time slots for this series",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/AppointmentSeriesWeekday"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "AppointmentSeriesWeekday": {
+                "required": [
+                    "id",
+                    "series_id",
+                    "weekday",
+                    "start_time",
+                    "end_time"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "series_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "weekday": {
+                        "description": "0=Sunday, 1=Monday, 2=Tuesday, 3=Wednesday, 4=Thursday, 5=Friday, 6=Saturday",
+                        "type": "integer",
+                        "maximum": 6,
+                        "minimum": 0,
+                        "example": 1
+                    },
+                    "start_time": {
+                        "type": "string",
+                        "format": "time",
+                        "example": "09:00"
+                    },
+                    "end_time": {
+                        "type": "string",
+                        "format": "time",
+                        "example": "10:00"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2026-02-01T10:00:00Z"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2026-02-01T10:00:00Z"
+                    }
+                },
+                "type": "object"
+            },
             "Customer": {
                 "required": [
                     "id",
@@ -398,6 +1499,14 @@
         }
     },
     "tags": [
+        {
+            "name": "Customer Appointments",
+            "description": "Customer Appointments"
+        },
+        {
+            "name": "Customer Appointment Series",
+            "description": "Customer Appointment Series"
+        },
         {
             "name": "Customers",
             "description": "Customers"
