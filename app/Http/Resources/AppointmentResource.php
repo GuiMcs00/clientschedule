@@ -31,8 +31,8 @@ class AppointmentResource extends JsonResource
             'title' => $this->title,
             'notes' => $this->notes,
 
-            'start_at' => $this->start_at?->toISOString(),
-            'end_at' => $this->end_at?->toISOString(),
+            'starts_at' => $this->starts_at?->toISOString(),
+            'ends_at' => $this->ends_at?->toISOString(),
 
             'series_id' => $this->series_id,
 
