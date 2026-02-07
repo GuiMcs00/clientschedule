@@ -233,14 +233,3 @@ This repository is intentionally scoped as a **POC** to demonstrate:
 * PostgreSQL-backed scheduling constraints
 * clear code organization and tradeoffs for production readiness
 
----
-
-### Pequenos ajustes que eu recomendo antes de enviar pro recrutador
-
-1. Trocar “Mini scheduling + client management…” do topo por essa seção “Problem → Solution” (já fiz acima).
-2. Manter “Architecture and Project Organization” fora do README (ou reduzir) — isso geralmente vira ruído; o recrutador quer **o que faz e como roda**.
-3. Se você tiver Swagger pronto, adicione uma linha curta:
-
-   * “OpenAPI available at …” (mas só se estiver estável).
-
-Se quiser, eu também monto um **email curto e forte** pro recrutador, mencionando o repositório como POC e destacando 3 bullets técnicos (sem textão).
